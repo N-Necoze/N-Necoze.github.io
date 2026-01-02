@@ -1,0 +1,68 @@
+name: Update Qiita News Section
+on:
+  schedule:
+    - cron: '0 0 * * *' # 毎日日本時間午前9時に実行
+  workflow_dispatch: # 手動実行ボタンを有効化
+
+jobs:
+  update-qiita:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install feedparser
+
+      - name: Update HTML
+        run: |
+          python << END
+          import feedparser
+          import re
+
+          # 1. Qiitaのフィードを取得
+          RSS_URL = "https://qiita.com/Necoze/feed"
+          feed = feedparser.parse(RSS_URL)
+          
+          # 2. 最新3件のカードを生成
+          new_cards_html = '<div class="grid">\n'
+          for entry in feed.entries[:3]:
+              # 日付をYYYY.MM.DD形式に変換
+              date = entry.updated[:10].replace('-', '.')
+              
+              new_cards_html += f'''                <a href="{entry.link}" class="card-link" target="_blank">
+                    <article class="card">
+                        <div class="card-img">QIITA ARTICLE</div>
+                        <div class="card-content">
+                            <div class="card-tag">Qiita / PRODUCT</div>
+                            <h3 class="card-title">{entry.title}</h3>
+                            <p class="card-update">Update: {date}</p>
+                        </div>
+                    </article>
+                </a>\n'''
+          new_cards_html += '            </div>'
+
+          # 3. index.htmlの特定部分を置換
+          with open("index.html", "r", encoding="utf-8") as f:
+              html_content = f.read()
+
+          # 正規表現で目印の間だけを入れ替える
+          pattern = r".*?"
+          replacement = f"\n            {new_cards_html}\n            "
+          updated_html = re.sub(pattern, replacement, html_content, flags=re.DOTALL)
+
+          with open("index.html", "w", encoding="utf-8") as f:
+              f.write(updated_html)
+          END
+
+      - name: Commit and Push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Automated Qiita News Update" || exit 0
+          git push
