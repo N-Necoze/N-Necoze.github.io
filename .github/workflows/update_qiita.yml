@@ -23,7 +23,7 @@ jobs:
           node << 'EOF'
           const fs = require('fs');
 
-          const RSS_URL = 'https://qiita.com/Necoze/feed';
+          const RSS_URL = 'https://qiita.com/Necoze/feed.atom';
 
           fetch(RSS_URL)
             .then(res => res.text())
