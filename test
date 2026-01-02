@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N-NECOZE PORTAL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050505;
+            --accent-color: #c00000;
+            --text-color: #ffffff;
+            --sub-text: #888888;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Noto Serif JP', "MS 明朝", serif;
+            margin: 0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* 背景のグリッド装飾 */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+        }
+
+        header {
+            padding: 40px 20px;
+            border-bottom: 2px solid var(--accent-color);
+            text-align: center;
+            background: linear-gradient(180deg, #111, #000);
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 900;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            border: 2px solid var(--text-color);
+            display: inline-block;
+            padding: 10px 30px;
+            position: relative;
+        }
+
+        .logo::after {
+            content: "OFFICIAL INFORMATION";
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            color: var(--accent-color);
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        nav a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--accent-color);
+        }
+
+        /* ニュースセクション */
+        .container {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            border-left: 8px solid var(--accent-color);
+            padding-left: 15px;
+            margin-bottom: 40px;
+            letter-spacing: 0.1em;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: #111;
+            border: 1px solid #333;
+            transition: transform 0.3s, border-color 0.3s;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+        }
+
+        .card-img {
+            width: 100%;
+            height: 200px;
+            background: #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #444;
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .card-tag {
+            color: var(--accent-color);
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        footer {
+            margin-top: 100px;
+            padding: 60px 20px;
+            border-top: 1px solid #333;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--sub-text);
+        }
+
+        .btn-more {
+            display: inline-block;
+            margin-top: 15px;
+            color: var(--text-color);
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            border: 1px solid var(--text-color);
+            padding: 8px 25px; /* 少し太めにするとエヴァっぽくなります */
+            text-decoration: none;
+            transition: all 0.2s ease; /* 変化の速さを調整 */
+            background: transparent;
+        }
+
+        .btn-more:hover {
+            background: var(--accent-color); /* ホバー時に赤色（--accent-color）にする */
+            border-color: var(--accent-color);
+            color: #fff;
+            font-weight: bold;
+            box-shadow: 0 0 10px var(--accent-color); /* ぼんやり光らせる演出 */
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">NECOZE-INFO</div>
+    <nav>
+        <a href="#">NEWS</a>
+        <a href="#">MOVIES</a>
+        <a href="#">GOODS</a>
+        <a href="#">EVENTS</a>
+    </nav>
+</header>
+
+<div class="container">
+    <h2 class="section-title">Qiita NEWS</h2>
+    
+    <div class="grid">
+        <article class="card">
+            <div class="card-img">IMAGE PLACEHOLDER</div>
+            <div class="card-content">
+                <div class="card-tag">GOODS</div>
+                <h3 class="card-title">新劇場版：序 復刻版ポスター先行予約開始。</h3>
+            </div>
+        </article>
+
+        <article class="card">
+            <div class="card-img">IMAGE PLACEHOLDER</div>
+            <div class="card-content">
+                <div class="card-tag">EVENT</div>
+                <h3 class="card-title">EVANGELION CROSSING EXPO 開催決定。</h3>
+            </div>
+        </article>
+
+        <article class="card">
+            <div class="card-img">IMAGE PLACEHOLDER</div>
+            <div class="card-content">
+                <div class="card-tag">INFO</div>
+                <h3 class="card-title">公式サイトリニューアルのお知らせ。</h3>
+            </div>
+        </article>
+    </div>
+</div>
+
+<div class="container">
+    <h2 class="section-title">LATEST NEWS</h2>
+    
+    <div class="grid">
+        <article class="card">
+            <div class="card-img">IMAGE PLACEHOLDER</div>
+            <div class="card-content">
+                <div class="card-tag">GOODS</div>
+                <h3 class="card-title">新劇場版：序 復刻版ポスター先行予約開始。</h3>
+            </div>
+        </article>
+
+        <article class="card">
+            <div class="card-img">IMAGE PLACEHOLDER</div>
+            <div class="card-content">
+                <div class="card-tag">EVENT</div>
+                <h3 class="card-title">EVANGELION CROSSING EXPO 開催決定。</h3>
+            </div>
+        </article>
+
+        <article class="card">
+            <div class="card-img">IMAGE PLACEHOLDER</div>
+            <div class="card-content">
+                <div class="card-tag">INFO</div>
+                <h3 class="card-title">公式サイトリニューアルのお知らせ。</h3>
+            </div>
+        </article>
+    </div>
+</div>
+
+<footer>
+    &copy; NECOZE PROJECT Since 2024
+</footer>
+
+</body>
+</html>

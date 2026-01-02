@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>N-NECOZE PORTAL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&display=swap" rel="stylesheet">
+    <title>NECOZE PORTAL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #050505;
             --accent-color: #c00000;
+            --alert-color: #ff9900;
             --text-color: #ffffff;
             --sub-text: #888888;
+            --panel-bg: rgba(20, 20, 20, 0.9);
         }
 
         body {
@@ -50,7 +52,7 @@
             padding: 10px 30px;
             position: relative;
         }
-
+        
         .logo::after {
             content: "OFFICIAL INFORMATION";
             position: absolute;
@@ -61,6 +63,23 @@
             color: var(--accent-color);
         }
 
+        .logo-area {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            color: var(--alert-color);
+            border: 1px solid var(--alert-color);
+            padding: 2px 8px;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.3;} 100% {opacity: 1;} }
+
+        /* ナビゲーション */
         nav {
             display: flex;
             justify-content: center;
@@ -74,15 +93,14 @@
             font-size: 0.9rem;
             transition: color 0.3s;
         }
-
+        
         nav a:hover {
             color: var(--accent-color);
         }
 
-        /* ニュースセクション */
         .container {
             max-width: 1200px;
-            margin: 60px auto;
+            margin: 40px auto;
             padding: 0 20px;
         }
 
@@ -93,7 +111,24 @@
             margin-bottom: 40px;
             letter-spacing: 0.1em;
         }
+        
+        .section-header {
+            font-size: 1.5rem;
+            letter-spacing: 0.3em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
 
+        .section-header::after {
+            content: "";
+            flex-grow: 1;
+            height: 1px;
+            background: var(--accent-color);
+            margin-left: 20px;
+        }
+
+        /* カードレイアウト */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -115,16 +150,17 @@
 
         .card-img {
             width: 100%;
-            height: 200px;
+            height: 100px;
             background: #222;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #444;
+            color: var(--sub-text);
+            font-size: 1rem;
         }
 
         .card-content {
-            padding: 20px;
+            padding: 10px;
         }
 
         .card-tag {
@@ -140,6 +176,12 @@
             font-weight: 700;
         }
 
+        .card-link {
+            display: block;
+            text-decoration: none; /* 下線を消す */
+            color: inherit;        /* 親の色を使う */
+        }
+
         footer {
             margin-top: 100px;
             padding: 60px 20px;
@@ -148,83 +190,222 @@
             font-size: 0.8rem;
             color: var(--sub-text);
         }
+
+        .panel {
+            background: var(--panel-bg);
+            border-left: 5px solid var(--accent-color);
+            padding: 20px;
+            position: relative;
+        }
+
+        .panel-category {
+            font-size: 0.7rem;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            min-height: 3em;
+        }
+
+        .btn-more {
+            display: inline-block;
+            margin-top: 15px;
+            color: var(--text-color);
+            font-size: 0.75rem;
+            border: 1px solid var(--text-color);
+            padding: 5px 15px;
+            text-decoration: none;
+        }
+
+        .btn-more:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        /* IoT ログインセクション（警告風） */
+        .restricted-area {
+            border: 2px solid var(--alert-color);
+            padding: 40px;
+            text-align: center;
+            background: rgba(255, 153, 0, 0.05);
+        }
+
+        .lock-icon {
+            font-size: 2rem;
+            color: var(--alert-color);
+            margin-bottom: 10px;
+        }
+        .btn-more {
+            display: inline-block;
+            margin-top: 15px;
+            color: var(--text-color);
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            border: 1px solid var(--text-color);
+            padding: 8px 25px; /* 少し太めにするとエヴァっぽくなります */
+            text-decoration: none;
+            transition: all 0.2s ease; /* 変化の速さを調整 */
+            background: transparent;
+        }
+
+        .btn-more:hover {
+            background: var(--accent-color); /* ホバー時に赤色（--accent-color）にする */
+            border-color: var(--accent-color);
+            color: #fff;
+            font-weight: bold;
+            box-shadow: 0 0 10px var(--accent-color); /* ぼんやり光らせる演出 */
+            cursor: pointer;
+        }
+
     </style>
 </head>
 <body>
 
 <header>
     <div class="logo">NECOZE-INFO</div>
+    <div class="logo-area">
+        <div class="status-badge">ACTIVE: ALL SYSTEMS NORMAL</div>
+    </div>
     <nav>
-        <a href="#">NEWS</a>
-        <a href="#">MOVIES</a>
-        <a href="#">GOODS</a>
-        <a href="#">EVENTS</a>
+        <a href="#numbers">NUMBERS</a>
+        <a href="#qiita">RECORDS (Qiita)</a>
+        <a href="#iot">SYSTEM (IoT)</a>
+        <a href="#products">PRODUCTS</a>
     </nav>
 </header>
 
 <div class="container">
-    <h2 class="section-title">Qiita NEWS</h2>
-    
-    <div class="grid">
-        <article class="card">
-            <div class="card-img">IMAGE PLACEHOLDER</div>
-            <div class="card-content">
-                <div class="card-tag">GOODS</div>
-                <h3 class="card-title">新劇場版：序 復刻版ポスター先行予約開始。</h3>
-            </div>
-        </article>
+    <h2 class="section-title" id="numbers">01. NUMBERS PREDICTION</h2>
+        <div class="grid">
+            <a href="https://example.com/detail" class="card-link">
+                <article class="card">
+                    <div class="card-img">IMAGE PLACEHOLDER</div>
+                    <div class="card-content">
+                        <div class="card-tag">OPERATION: DAILY REPORT</div>
+                        <h3 class="card-title">本日のNUMBERS当選予測：【XXXX】</h3>
+                        <p class="card-update">Update: 2024.05.24</p>
+                    </div>
+                </article>
+            </a>
+            <a href="https://example.com/detail" class="card-link">
+                <article class="card">
+                    <div class="card-img">IMAGE PLACEHOLDER</div>
+                    <div class="card-content">
+                        <div class="card-tag">OPERATION: DAILY REPORT</div>
+                        <h3 class="card-title">本日のNUMBERS当選予測：【XXXX】</h3>
+                        <p class="card-update">Update: 2024.05.24</p>
+                    </div>
+                </article>
+            </a>
+            <a href="https://example.com/detail" class="card-link">
+                <article class="card">
+                    <div class="card-img">IMAGE PLACEHOLDER</div>
+                    <div class="card-content">
+                        <div class="card-tag">OPERATION: DAILY REPORT</div>
+                        <h3 class="card-title">本日のNUMBERS当選予測：【XXXX】</h3>
+                        <p class="card-update">Update: 2024.05.24</p>
+                    </div>
+                </article>
+            </a>
+        </div>
+        <div style="text-align: right; margin-top: 20px;">
+            <a href="records.html" class="btn-more">VIEW ALL RECORDS ></a>
+        </div>
+        
 
-        <article class="card">
-            <div class="card-img">IMAGE PLACEHOLDER</div>
-            <div class="card-content">
-                <div class="card-tag">EVENT</div>
-                <h3 class="card-title">EVANGELION CROSSING EXPO 開催決定。</h3>
-            </div>
-        </article>
+    <h2 class="section-title" id="qiita">02. EXTERNAL RECORDS</h2>
+        <div class="grid">
+            <a href="https://qiita.com/Necoze/items/112452067e81a817505d" class="card-link">
+                <article class="card">
+                    <div class="card-img">IMAGE PLACEHOLDER</div>
+                    <div class="card-content">
+                        <div class="card-tag">Qiita / PRODUCT</div>
+                        <h3 class="card-title">Notion×GASで、QiitaのLGTM通知をLINEに送る </h3>
+                        <p class="card-update">Update: 2024.05.24</p>
+                    </div>
+                </article>
+            </a>
+            <a href="https://qiita.com/Necoze/items/112452067e81a817505d" class="card-link">
+                <article class="card">
+                    <div class="card-img">IMAGE PLACEHOLDER</div>
+                    <div class="card-content">
+                        <div class="card-tag">Qiita / PRODUCT</div>
+                        <h3 class="card-title">Notion×GASで、QiitaのLGTM通知をLINEに送る </h3>
+                        <p class="card-update">Update: 2024.05.24</p>
+                    </div>
+                </article>
+            </a>
+            <a href="https://qiita.com/Necoze/items/112452067e81a817505d" class="card-link">
+                <article class="card">
+                    <div class="card-img">IMAGE PLACEHOLDER</div>
+                    <div class="card-content">
+                        <div class="card-tag">Qiita / PRODUCT</div>
+                        <h3 class="card-title">Notion×GASで、QiitaのLGTM通知をLINEに送る </h3>
+                        <p class="card-update">Update: 2024.05.24</p>
+                    </div>
+                </article>
+            </a>
+        </div>
+        <div style="text-align: right; margin-top: 20px;">
+            <a href="records.html" class="btn-more">VIEW ALL RECORDS ></a>
+        </div>        
 
-        <article class="card">
-            <div class="card-img">IMAGE PLACEHOLDER</div>
-            <div class="card-content">
-                <div class="card-tag">INFO</div>
-                <h3 class="card-title">公式サイトリニューアルのお知らせ。</h3>
-            </div>
-        </article>
+    <h2 class="section-title" id="qiita">03. EXTERNAL RECORDS</h2>
+        <div class="grid">
+            <a href="https://qiita.com/Necoze/items/112452067e81a817505d" class="card-link">
+                <article class="card">
+                    <div class="card-img">IMAGE PLACEHOLDER</div>
+                    <div class="card-content">
+                        <div class="card-tag">Qiita / PRODUCT</div>
+                        <h3 class="card-title">Notion×GASで、QiitaのLGTM通知をLINEに送る </h3>
+                        <p class="card-update">Update: 2024.05.24</p>
+                    </div>
+                </article>
+            </a>
+            <a href="https://qiita.com/Necoze/items/112452067e81a817505d" class="card-link">
+                <article class="card">
+                    <div class="card-img">IMAGE PLACEHOLDER</div>
+                    <div class="card-content">
+                        <div class="card-tag">Qiita / PRODUCT</div>
+                        <h3 class="card-title">Notion×GASで、QiitaのLGTM通知をLINEに送る </h3>
+                        <p class="card-update">Update: 2024.05.24</p>
+                    </div>
+                </article>
+            </a>
+            <a href="https://qiita.com/Necoze/items/112452067e81a817505d" class="card-link">
+                <article class="card">
+                    <div class="card-img">IMAGE PLACEHOLDER</div>
+                    <div class="card-content">
+                        <div class="card-tag">Qiita / PRODUCT</div>
+                        <h3 class="card-title">Notion×GASで、QiitaのLGTM通知をLINEに送る </h3>
+                        <p class="card-update">Update: 2024.05.24</p>
+                    </div>
+                </article>
+            </a>
+        </div>
+        <div style="text-align: right; margin-top: 20px;">
+            <a href="records.html" class="btn-more">VIEW ALL RECORDS ></a>
+        </div>
+
+
+    <h2 class="section-title" id="iot">04. RESTRICTED AREA</h2>
+    <div class="restricted-area">
+        <div class="lock-icon">⚠</div>
+            <h3 style="color: var(--alert-color);">LEVEL 4 ACCESS REQUIRED</h3>
+            <p>環境IoTリアルタイムモニタリングシステム。閲覧には権限（ログイン）が必要です。</p>
+            <a href="#" class="btn-more" style="border-color: var(--alert-color); color: var(--alert-color);">LOGIN</a>
+        </div>
+
     </div>
-</div>
 
-<div class="container">
-    <h2 class="section-title">LATEST NEWS</h2>
-    
-    <div class="grid">
-        <article class="card">
-            <div class="card-img">IMAGE PLACEHOLDER</div>
-            <div class="card-content">
-                <div class="card-tag">GOODS</div>
-                <h3 class="card-title">新劇場版：序 復刻版ポスター先行予約開始。</h3>
-            </div>
-        </article>
+    <footer>
+        <div style="text-align: center; padding: 40px; color: #444; font-size: 0.7rem;">
+            SYSTEMS BY NECOZE. NO UNAUTHORIZED ACCESS.
+        </div>
+    </footer>
 
-        <article class="card">
-            <div class="card-img">IMAGE PLACEHOLDER</div>
-            <div class="card-content">
-                <div class="card-tag">EVENT</div>
-                <h3 class="card-title">EVANGELION CROSSING EXPO 開催決定。</h3>
-            </div>
-        </article>
-
-        <article class="card">
-            <div class="card-img">IMAGE PLACEHOLDER</div>
-            <div class="card-content">
-                <div class="card-tag">INFO</div>
-                <h3 class="card-title">公式サイトリニューアルのお知らせ。</h3>
-            </div>
-        </article>
-    </div>
-</div>
-
-<footer>
-    &copy; NECOZE PROJECT Since 2024
-</footer>
-
-</body>
+    </body>
 </html>
