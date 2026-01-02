@@ -1,12 +1,12 @@
-name: Update Qiita News Section
+name: Update Qiita Posts
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: "0 */6 * * *"
   workflow_dispatch:
 
 jobs:
-  update:
+  update-qiita:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -14,60 +14,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Fetch Recent Qiita Posts
+        uses: gautamkrishnar/blog-post-workflow@v1
         with:
-          node-version: '20'
-
-      - name: Update Qiita News
-        run: |
-          node << 'EOF'
-          const fs = require('fs');
-
-          const RSS_URL = 'https://qiita.com/Necoze/feed';
-
-          fetch(RSS_URL)
-            .then(res => res.text())
-            .then(xml => {
-              const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0,3);
-
-              const cards = items.map(item => {
-                const title = item[1].match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/)?.[1] ?? '';
-                const link  = item[1].match(/<link>(.*?)<\/link>/)?.[1] ?? '';
-                const date  = item[1].match(/<pubDate>(.*?)<\/pubDate>/)?.[1]?.slice(0,16) ?? '';
-
-                return `
-                <a href="${link}" class="card-link" target="_blank">
-                  <article class="card">
-                    <div class="card-img">QIITA ARTICLE</div>
-                    <div class="card-content">
-                      <div class="card-tag">Qiita / PRODUCT</div>
-                      <h3 class="card-title">${title}</h3>
-                      <p class="card-update">Update: ${date}</p>
-                    </div>
-                  </article>
-                </a>`;
-              }).join('\n');
-
-              const html = fs.readFileSync('index.html', 'utf8');
-
-              const updated = html.replace(
-                /(<!-- QIITA_NEWS_START -->)[\s\S]*?(<!-- QIITA_NEWS_END -->)/,
-                `$1\n<div class="grid">\n${cards}\n</div>\n$2`
-              );
-
-              if (html !== updated) {
-                fs.writeFileSync('index.html', updated);
-                console.log('Qiita News updated');
-              } else {
-                console.log('No changes');
-              }
-            });
-          EOF
-
-      - name: Commit & Push
-        run: |
-          git config user.name github-actions[bot]
-          git config user.email github-actions[bot]@users.noreply.github.com
-          git add index.html
-          git diff --cached --quiet || git commit -m "Update Qiita News"
-          git push
+          feed_list: "https://qiita.com/Necoze/feed.atom"
+          file_path: "index.html"
+          comment_tag_name: "QIITA-POSTS"
+          max_post_count: 3
+          template: |
+            <a href="$url" class="card-link" target="_blank">
+              <article class="card">
+                <div class="card-img">QIITA ARTICLE</div>
+                <div class="card-content">
+                  <div class="card-tag">Qiita / PRODUCT</div>
+                  <h3 class="card-title">$title</h3>
+                </div>
+              </article>
+            </a>
