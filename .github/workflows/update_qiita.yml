@@ -2,20 +2,20 @@ name: Update Qiita News Section
 
 on:
   schedule:
-    - cron: '0 0 * * *' # 毎日日本時間午前9時に実行
-  workflow_dispatch:     # ボタンから手動実行可能
+    - cron: '0 0 * * *' # 毎日日本時間午前9時
+  workflow_dispatch:     # 手動実行用
 
 jobs:
   update-qiita:
     runs-on: ubuntu-latest
     permissions:
-      contents: write    # リポジトリへの書き込み権限を明示
+      contents: write
     
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # 全履歴を取得して競合を防止
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -31,11 +31,9 @@ jobs:
           import feedparser
           import re
 
-          # 1. QiitaのRSSを取得
           RSS_URL = "https://qiita.com/Necoze/feed"
           feed = feedparser.parse(RSS_URL)
           
-          # 2. 最新3件のHTMLを生成（エヴァ風デザインを維持）
           new_cards_html = ''
           for entry in feed.entries[:3]:
               date = entry.updated[:10].replace('-', '.')
@@ -51,11 +49,9 @@ jobs:
                   </article>
               </a>'''
 
-          # 3. index.htmlの特定コメント部分を置換
           with open("index.html", "r", encoding="utf-8") as f:
               html_content = f.read()
 
-          # QIITA_START と QIITA_END の間を入れ替える（前後のgridタグを含めて調整）
           pattern = r".*?"
           replacement = f'\\n            <div class="grid">{new_cards_html}\\n            </div>\\n            '
           
@@ -70,12 +66,18 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # リモートの最新の変更を取り込んで競合を回避
-          git pull --rebase origin main
-          
+          # 1. まず変更分をステージング
           git add index.html
-          # 変更がない場合はスキップし、ある場合はコミットしてプッシュ
+          
+          # 2. 変更がある場合のみ処理を継続
           if ! git diff --cached --exit-code; then
+            # 3. ローカルで先にコミットを作る
             git commit -m "Automated Qiita News Update"
+            
+            # 4. リモートの最新を取り込みつつ、自分のコミットを上に乗せる
+            # これで "unstaged changes" エラーを回避できます
+            git pull --rebase origin main
+            
+            # 5. プッシュ
             git push origin main
           fi
