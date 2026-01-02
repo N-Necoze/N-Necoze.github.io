@@ -2,89 +2,72 @@ name: Update Qiita News Section
 
 on:
   schedule:
-    - cron: '0 0 * * *' # 毎日日本時間午前9時
-  workflow_dispatch:     # 手動実行用
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 jobs:
-  update-qiita:
+  update:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
         with:
-          fetch-depth: 0
+          node-version: '20'
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-
-      - name: Install dependencies
-        run: pip install feedparser
-
-      - name: Update HTML Content
+      - name: Update Qiita News
         run: |
-          python << END
-          import feedparser
-          import re
-          import sys
+          node << 'EOF'
+          const fs = require('fs');
 
-          RSS_URL = "https://qiita.com/Necoze/feed"
-          feed = feedparser.parse(RSS_URL)
-          
-          # 最新3件の記事カードを作成
-          new_cards_html = ''
-          for entry in feed.entries[:3]:
-              date = entry.updated[:10].replace('-', '.')
-              new_cards_html += f'''
-              <a href="{entry.link}" class="card-link" target="_blank">
+          const RSS_URL = 'https://qiita.com/Necoze/feed';
+
+          fetch(RSS_URL)
+            .then(res => res.text())
+            .then(xml => {
+              const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0,3);
+
+              const cards = items.map(item => {
+                const title = item[1].match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/)?.[1] ?? '';
+                const link  = item[1].match(/<link>(.*?)<\/link>/)?.[1] ?? '';
+                const date  = item[1].match(/<pubDate>(.*?)<\/pubDate>/)?.[1]?.slice(0,16) ?? '';
+
+                return `
+                <a href="${link}" class="card-link" target="_blank">
                   <article class="card">
-                      <div class="card-img">QIITA ARTICLE</div>
-                      <div class="card-content">
-                          <div class="card-tag">Qiita / PRODUCT</div>
-                          <h3 class="card-title">{entry.title}</h3>
-                          <p class="card-update">Update: {date}</p>
-                      </div>
+                    <div class="card-img">QIITA ARTICLE</div>
+                    <div class="card-content">
+                      <div class="card-tag">Qiita / PRODUCT</div>
+                      <h3 class="card-title">${title}</h3>
+                      <p class="card-update">Update: ${date}</p>
+                    </div>
                   </article>
-              </a>'''
+                </a>`;
+              }).join('\n');
 
-          # index.htmlを読み込み
-          try:
-              with open("index.html", "r", encoding="utf-8") as f:
-                  html_content = f.read()
-          except FileNotFoundError:
-              print("index.htmlが見つかりません")
-              sys.exit(1)
+              const html = fs.readFileSync('index.html', 'utf8');
 
-          # 置換用の正規表現パターン（コメントタグの間を特定）
-          pattern = r".*?"
-          
-          # 置換後の文字列（タグを維持しつつ中身のgridを更新）
-          replacement = f'\\n            <div class="grid">{new_cards_html}\\n            </div>\\n            '
-          
-          # タグが存在するか確認してから置換
-          if "" in html_content:
-              updated_html = re.sub(pattern, replacement, html_content, flags=re.DOTALL)
-              with open("index.html", "w", encoding="utf-8") as f:
-                  f.write(updated_html)
-              print("Successfully updated Qiita section.")
-          else:
-              print("Error: が見つかりません。HTML側を確認してください。")
-              sys.exit(1)
-          END
+              const updated = html.replace(
+                /(<!-- QIITA_NEWS_START -->)[\s\S]*?(<!-- QIITA_NEWS_END -->)/,
+                `$1\n<div class="grid">\n${cards}\n</div>\n$2`
+              );
 
-      - name: Commit and Push
+              if (html !== updated) {
+                fs.writeFileSync('index.html', updated);
+                console.log('Qiita News updated');
+              } else {
+                console.log('No changes');
+              }
+            });
+          EOF
+
+      - name: Commit & Push
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
+          git config user.name github-actions[bot]
+          git config user.email github-actions[bot]@users.noreply.github.com
           git add index.html
-          
-          if ! git diff --cached --exit-code; then
-            git commit -m "Automated Qiita News Update"
-            git pull --rebase origin main
-            git push origin main
-          fi
+          git diff --cached --quiet || git commit -m "Update Qiita News"
+          git push
