@@ -30,10 +30,12 @@ jobs:
           python << END
           import feedparser
           import re
+          import sys
 
           RSS_URL = "https://qiita.com/Necoze/feed"
           feed = feedparser.parse(RSS_URL)
           
+          # 最新3件の記事カードを作成
           new_cards_html = ''
           for entry in feed.entries[:3]:
               date = entry.updated[:10].replace('-', '.')
@@ -49,16 +51,29 @@ jobs:
                   </article>
               </a>'''
 
-          with open("index.html", "r", encoding="utf-8") as f:
-              html_content = f.read()
+          # index.htmlを読み込み
+          try:
+              with open("index.html", "r", encoding="utf-8") as f:
+                  html_content = f.read()
+          except FileNotFoundError:
+              print("index.htmlが見つかりません")
+              sys.exit(1)
 
+          # 置換用の正規表現パターン（コメントタグの間を特定）
           pattern = r".*?"
+          
+          # 置換後の文字列（タグを維持しつつ中身のgridを更新）
           replacement = f'\\n            <div class="grid">{new_cards_html}\\n            </div>\\n            '
           
-          updated_html = re.sub(pattern, replacement, html_content, flags=re.DOTALL)
-
-          with open("index.html", "w", encoding="utf-8") as f:
-              f.write(updated_html)
+          # タグが存在するか確認してから置換
+          if "" in html_content:
+              updated_html = re.sub(pattern, replacement, html_content, flags=re.DOTALL)
+              with open("index.html", "w", encoding="utf-8") as f:
+                  f.write(updated_html)
+              print("Successfully updated Qiita section.")
+          else:
+              print("Error: が見つかりません。HTML側を確認してください。")
+              sys.exit(1)
           END
 
       - name: Commit and Push
@@ -66,18 +81,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # 1. まず変更分をステージング
           git add index.html
           
-          # 2. 変更がある場合のみ処理を継続
           if ! git diff --cached --exit-code; then
-            # 3. ローカルで先にコミットを作る
             git commit -m "Automated Qiita News Update"
-            
-            # 4. リモートの最新を取り込みつつ、自分のコミットを上に乗せる
-            # これで "unstaged changes" エラーを回避できます
             git pull --rebase origin main
-            
-            # 5. プッシュ
             git push origin main
           fi
