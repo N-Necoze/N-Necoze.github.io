@@ -1,8 +1,8 @@
-name: Update Qiita News Section
+name: Update Qiita News
 
 on:
   schedule:
-   - cron: "0 */6 * * *" # 6時間ごと
+    - cron: "0 */6 * * *" # 6時間ごと
   workflow_dispatch:
 
 jobs:
@@ -28,24 +28,31 @@ jobs:
           fetch(RSS_URL)
             .then(res => res.text())
             .then(xml => {
-              const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0,3);
+              const entries = [...xml.matchAll(/<entry>([\s\S]*?)<\/entry>/g)].slice(0, 3);
 
-              const cards = items.map(item => {
-                const title = item[1].match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/)?.[1] ?? '';
-                const link  = item[1].match(/<link>(.*?)<\/link>/)?.[1] ?? '';
-                const date  = item[1].match(/<pubDate>(.*?)<\/pubDate>/)?.[1]?.slice(0,16) ?? '';
+              if (entries.length === 0) {
+                console.log('No entries found');
+                process.exit(0);
+              }
+
+              const cards = entries.map(entry => {
+                const body = entry[1];
+
+                const title = body.match(/<title>(.*?)<\/title>/)?.[1] ?? '';
+                const link  = body.match(/<link[^>]*href="(.*?)"/)?.[1] ?? '';
+                const date  = body.match(/<updated>(.*?)<\/updated>/)?.[1]?.[0,10];
 
                 return `
-                <a href="${link}" class="card-link" target="_blank">
-                  <article class="card">
-                    <div class="card-img">QIITA ARTICLE</div>
-                    <div class="card-content">
-                      <div class="card-tag">Qiita / PRODUCT</div>
-                      <h3 class="card-title">${title}</h3>
-                      <p class="card-update">Update: ${date}</p>
-                    </div>
-                  </article>
-                </a>`;
+          <a href="${link}" class="card-link" target="_blank">
+            <article class="card">
+              <div class="card-img">QIITA ARTICLE</div>
+              <div class="card-content">
+                <div class="card-tag">Qiita / PRODUCT</div>
+                <h3 class="card-title">${title}</h3>
+                <p class="card-update">Update: ${date}</p>
+              </div>
+            </article>
+          </a>`;
               }).join('\n');
 
               const html = fs.readFileSync('index.html', 'utf8');
@@ -61,6 +68,10 @@ jobs:
               } else {
                 console.log('No changes');
               }
+            })
+            .catch(err => {
+              console.error(err);
+              process.exit(1);
             });
           EOF
 
