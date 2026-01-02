@@ -40,12 +40,12 @@ jobs:
 
                 const title = body.match(/<title>(.*?)<\/title>/)?.[1] ?? '';
                 const link  = body.match(/<link[^>]*href="(.*?)"/)?.[1] ?? '';
-                const date  = body.match(/<updated>(.*?)<\/updated>/)?.[1]?.[0,10];
+                const date = body.match(/<updated>(.*?)<\/updated>/)?.[1]?.slice(0, 10) ?? '';
 
                 return `
           <a href="${link}" class="card-link" target="_blank">
             <article class="card">
-              <div class="card-img">QIITA ARTICLE</div>
+              <div class="card-img">IMAGE PLACEHOLDER</div>
               <div class="card-content">
                 <div class="card-tag">Qiita / PRODUCT</div>
                 <h3 class="card-title">${title}</h3>
