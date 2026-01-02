@@ -1,14 +1,21 @@
 name: Update Qiita News Section
+
 on:
   schedule:
     - cron: '0 0 * * *' # 毎日日本時間午前9時に実行
-  workflow_dispatch: # 手動実行ボタンを有効化
+  workflow_dispatch:     # ボタンから手動実行可能
 
 jobs:
   update-qiita:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write    # リポジトリへの書き込み権限を明示
+    
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 全履歴を取得して競合を防止
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -18,41 +25,40 @@ jobs:
       - name: Install dependencies
         run: pip install feedparser
 
-      - name: Update HTML
+      - name: Update HTML Content
         run: |
           python << END
           import feedparser
           import re
 
-          # 1. Qiitaのフィードを取得
+          # 1. QiitaのRSSを取得
           RSS_URL = "https://qiita.com/Necoze/feed"
           feed = feedparser.parse(RSS_URL)
           
-          # 2. 最新3件のカードを生成
-          new_cards_html = '<div class="grid">\n'
+          # 2. 最新3件のHTMLを生成（エヴァ風デザインを維持）
+          new_cards_html = ''
           for entry in feed.entries[:3]:
-              # 日付をYYYY.MM.DD形式に変換
               date = entry.updated[:10].replace('-', '.')
-              
-              new_cards_html += f'''                <a href="{entry.link}" class="card-link" target="_blank">
-                    <article class="card">
-                        <div class="card-img">QIITA ARTICLE</div>
-                        <div class="card-content">
-                            <div class="card-tag">Qiita / PRODUCT</div>
-                            <h3 class="card-title">{entry.title}</h3>
-                            <p class="card-update">Update: {date}</p>
-                        </div>
-                    </article>
-                </a>\n'''
-          new_cards_html += '            </div>'
+              new_cards_html += f'''
+              <a href="{entry.link}" class="card-link" target="_blank">
+                  <article class="card">
+                      <div class="card-img">QIITA ARTICLE</div>
+                      <div class="card-content">
+                          <div class="card-tag">Qiita / PRODUCT</div>
+                          <h3 class="card-title">{entry.title}</h3>
+                          <p class="card-update">Update: {date}</p>
+                      </div>
+                  </article>
+              </a>'''
 
-          # 3. index.htmlの特定部分を置換
+          # 3. index.htmlの特定コメント部分を置換
           with open("index.html", "r", encoding="utf-8") as f:
               html_content = f.read()
 
-          # 正規表現で目印の間だけを入れ替える
+          # QIITA_START と QIITA_END の間を入れ替える（前後のgridタグを含めて調整）
           pattern = r".*?"
-          replacement = f"\n            {new_cards_html}\n            "
+          replacement = f'\\n            <div class="grid">{new_cards_html}\\n            </div>\\n            '
+          
           updated_html = re.sub(pattern, replacement, html_content, flags=re.DOTALL)
 
           with open("index.html", "w", encoding="utf-8") as f:
@@ -63,6 +69,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # リモートの最新の変更を取り込んで競合を回避
+          git pull --rebase origin main
+          
           git add index.html
-          git commit -m "Automated Qiita News Update" || exit 0
-          git push
+          # 変更がない場合はスキップし、ある場合はコミットしてプッシュ
+          if ! git diff --cached --exit-code; then
+            git commit -m "Automated Qiita News Update"
+            git push origin main
+          fi
