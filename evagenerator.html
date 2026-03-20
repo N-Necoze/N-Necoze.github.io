@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>エヴァ風文字ジェネレータ</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@900&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    text-align: center;
+    background: #050505;
+    color: #fff;
+    font-family: 'Noto Serif JP', serif;
+  }
+  input, button {
+    margin: 10px;
+    padding: 10px;
+    background: #000;
+    border: 1px solid #333;
+    color: #fff;
+  }
+  canvas {
+    border: 1px solid #ccc;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<h2>エヴァ風文字ジェネレータ</h2>
+
+<input type="file" id="imageInput"><br><br>
+<input type="text" id="textInput" placeholder="文字を入力"><br><br>
+<button onclick="draw()">生成</button>
+
+<br>
+<canvas id="canvas"></canvas>
+
+<script>
+function draw() {
+    const file = document.getElementById('imageInput').files[0];
+    const text = document.getElementById('textInput').value;
+
+    if (!file || !text) return;
+
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        img.src = e.target.result;
+    };
+
+    img.onload = function() {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        ctx.drawImage(img, 0, 0);
+
+        let fontSize = 60;
+        ctx.font = `bold ${fontSize}px serif`;
+
+        // 文字幅取得
+        let textWidth = ctx.measureText(text).width;
+
+        // 最大幅（余白つき）
+        const maxWidth = canvas.width * 0.9;
+
+        // はみ出る場合はフォントサイズ縮小
+        while (textWidth > maxWidth) {
+            fontSize -= 2;
+            ctx.font = `bold ${fontSize}px serif`;
+            textWidth = ctx.measureText(text).width;
+        }
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height * 0.88);
+
+        // 横圧縮
+        ctx.scale(0.7, 1);
+
+        ctx.fillStyle = "white";
+        ctx.fillText(text, 0, 0);
+
+        ctx.restore();
+    };
+
+    reader.readAsDataURL(file);
+}
+</script>
+
+</body>
+</html>
